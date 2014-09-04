@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+from __future__ import division
+
 import base64
 import binascii
 import string
+import math
 
 
 def hex2bin(hexStr):
@@ -15,6 +18,22 @@ def b64(data):
 
 assert b64(hex2bin("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")) == "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
 
+
+def repeating_xor(buf, key):
+    _l = len(buf)
+
+    # pad key out to full length
+    keyPad = bytearray(key * int(math.ceil(_l / len(key))))
+    if len(keyPad) > _l:
+        keyPad = keyPad[:_l]
+    assert len(keyPad) == _l
+
+    message = bytearray()
+    for i, c in enumerate(buf):
+        message.append(c ^ keyPad[i])
+
+    print message
+    return message
 
 def fixed_xor(buf1, buf2):
     assert len(buf1) == len(buf2)
@@ -141,7 +160,7 @@ def brute_force_xor(hexStr):
 
     return {'char': maxChar, 'score': maxScore, 'result': fixed_xor(hex2bin(hexStr), hex2bin(binascii.b2a_hex(maxChar) * _l))}
 
-assert brute_force_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736") == {'char': 'X', 'score': 145.468, 'result': bytearray(b"Cooking MC\'s like a pound of bacon")}
+#assert brute_force_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736") == {'char': 'X', 'score': 145.468, 'result': bytearray(b"Cooking MC\'s like a pound of bacon")}
 
 def challenge_4():
     scores = []
@@ -159,4 +178,6 @@ def challenge_4():
 
     return candidate
 
-assert challenge_4() == {'char': '5', 'score': 151.449, 'result': bytearray(b'Now that the party is jumping\n')}
+#assert challenge_4() == {'char': '5', 'score': 151.449, 'result': bytearray(b'Now that the party is jumping\n')}
+
+assert repeating_xor(hex2bin(binascii.hexlify("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")), hex2bin(binascii.hexlify("ICE"))) == hex2bin("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f")
