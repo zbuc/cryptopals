@@ -139,8 +139,24 @@ def brute_force_xor(hexStr):
             maxScore = score
             maxChar = char
 
-    print "brute forced, best score was char", maxChar, "with score", maxScore
-    print "produced string..."
-    print fixed_xor(hex2bin(hexStr), hex2bin(binascii.b2a_hex(maxChar) * _l))
+    return {'char': maxChar, 'score': maxScore, 'result': fixed_xor(hex2bin(hexStr), hex2bin(binascii.b2a_hex(maxChar) * _l))}
 
-brute_force_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736")
+assert brute_force_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736") == {'char': 'X', 'score': 145.468, 'result': bytearray(b"Cooking MC\'s like a pound of bacon")}
+
+def challenge_4():
+    scores = []
+    with open('4.txt', 'r') as f:
+        for line in f:
+            line = line.strip()
+            scores.append(brute_force_xor(line))
+
+    maxScore = 0
+    candidate = None
+    for s in scores:
+        if s['score'] > maxScore:
+            maxScore = s['score']
+            candidate = s
+
+    return candidate
+
+assert challenge_4() == {'char': '5', 'score': 151.449, 'result': bytearray(b'Now that the party is jumping\n')}
