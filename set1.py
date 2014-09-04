@@ -32,7 +32,6 @@ def repeating_xor(buf, key):
     for i, c in enumerate(buf):
         message.append(c ^ keyPad[i])
 
-    print message
     return message
 
 def fixed_xor(buf1, buf2):
@@ -181,3 +180,26 @@ def challenge_4():
 #assert challenge_4() == {'char': '5', 'score': 151.449, 'result': bytearray(b'Now that the party is jumping\n')}
 
 assert repeating_xor(hex2bin(binascii.hexlify("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")), hex2bin(binascii.hexlify("ICE"))) == hex2bin("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f")
+
+
+def edit_dist(str1, str2):
+    assert len(str1) == len(str2)
+    xor = fixed_xor(bytearray(str1), bytearray(str2))
+    binary = ' '.join(format(b, 'b') for b in xor)
+    _sum = binary.count('1')
+    return _sum
+
+
+def challenge_6():
+    b64 = ''
+    with open('6.txt', 'r') as f:
+        for line in f:
+            line = line.strip()
+            b64 += line
+    #print base64.b64decode(b64)
+    #print b64
+
+
+challenge_6()
+assert edit_dist("this is a test", "wokka wokka!!!") == 37
+
