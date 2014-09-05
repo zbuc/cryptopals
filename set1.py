@@ -8,7 +8,7 @@ import string
 import math
 
 
-ASSERT = True
+TEST_ASSERTIONS = True
 
 
 def hex2bin(hexStr):
@@ -19,9 +19,10 @@ def b64(data):
     return base64.b64encode(data)
 
 
-assert b64(hex2bin("49276d206b696c6c696e6720796f75722062726169"
-                   "6e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")) \
-    == "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
+if TEST_ASSERTIONS:
+    assert b64(hex2bin("49276d206b696c6c696e6720796f75722062726169"
+                       "6e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")) \
+        == "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t"
 
 
 def repeating_xor(buf, key):
@@ -52,9 +53,10 @@ def fixed_xor(buf1, buf2):
     return message
 
 
-assert fixed_xor(hex2bin("1c0111001f010100061a024b53535009181c"),
-                 hex2bin("686974207468652062756c6c277320657965")) \
-    == hex2bin("746865206b696420646f6e277420706c6179")
+if TEST_ASSERTIONS:
+    assert fixed_xor(hex2bin("1c0111001f010100061a024b53535009181c"),
+                     hex2bin("686974207468652062756c6c277320657965")) \
+        == hex2bin("746865206b696420646f6e277420706c6179")
 
 
 def other_char_score(char):
@@ -184,11 +186,12 @@ def brute_force_xor(bytes):
     return {'char': maxChar, 'score': maxScore, 'result':
             fixed_xor(bytes, hex2bin(binascii.b2a_hex(maxChar) * _l))}
 
-assert brute_force_xor(hex2bin("1b37373331363f78151b7f2b783431333d78397828372d"
-                               "363c78373e783a393b3736")) == \
-    {'char': 'X', 'score': 145.468, 'result': bytearray(b"Cooking MC\'s like a"
-                                                         " pound of bacon")
-    }
+if TEST_ASSERTIONS:
+    assert brute_force_xor(hex2bin("1b37373331363f78151b7f2b783431333d78397828372d"
+                                   "363c78373e783a393b3736")) == \
+        {'char': 'X', 'score': 145.468, 'result': bytearray(b"Cooking MC\'s like a"
+                                                             " pound of bacon")
+        }
 
 
 def challenge_4():
@@ -216,17 +219,18 @@ def brute_force_xor_chunks(lines):
 
     return candidate
 
-if ASSERT:
+if TEST_ASSERTIONS:
     assert challenge_4() == {'char': '5', 'score': 151.449, 'result':
                              bytearray(b'Now that the party is jumping\n')}
 
-assert repeating_xor(hex2bin(binascii.hexlify("Burning 'em, if you ain't quick"
-                                              " and nimble\nI go crazy when I "
-                                              "hear a cymbal")),
-                     hex2bin(binascii.hexlify("ICE"))) == \
-    hex2bin("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622632"
-            "4272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b202831"
-            "65286326302e27282f")
+if TEST_ASSERTIONS:
+    assert repeating_xor(hex2bin(binascii.hexlify("Burning 'em, if you ain't quick"
+                                                  " and nimble\nI go crazy when I "
+                                                  "hear a cymbal")),
+                         hex2bin(binascii.hexlify("ICE"))) == \
+        hex2bin("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a2622632"
+                "4272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b202831"
+                "65286326302e27282f")
 
 
 def edit_dist(str1, str2):
@@ -259,8 +263,9 @@ def transpose(chunks, sz):
     return transposition
 
 
-assert transpose([bytearray("assp"), bytearray("burg"), bytearray("gers")], 5)\
-    == [bytearray("abg"), bytearray("sue"), bytearray("srr"), bytearray("pgs")]
+if TEST_ASSERTIONS:
+    assert transpose([bytearray("assp"), bytearray("burg"), bytearray("gers")], 5)\
+        == [bytearray("abg"), bytearray("sue"), bytearray("srr"), bytearray("pgs")]
 
 
 def challenge_6():
@@ -314,8 +319,10 @@ def challenge_6():
     return bytearray(''.join([c['char'] for c in key]))
 
 
+if TEST_ASSERTIONS:
+    assert edit_dist("this is a test", "wokka wokka!!!") == 37
+
 key = challenge_6()
-assert edit_dist("this is a test", "wokka wokka!!!") == 37
 b64 = ''
 bytes = ''
 with open('6.txt', 'r') as f:
