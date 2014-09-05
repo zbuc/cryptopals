@@ -6,9 +6,10 @@ import base64
 import binascii
 import string
 import math
+from sets import Set
 
 
-TEST_ASSERTIONS = True
+TEST_ASSERTIONS = False
 
 
 def hex2bin(hexStr):
@@ -27,8 +28,6 @@ if TEST_ASSERTIONS:
 
 def repeating_xor(buf, key):
     message = bytearray()
-    if not type(buf) == type(message) == type(key):
-        print type(buf), type(key)
     assert type(buf) == type(message) and type(key) == type(message)
 
     _l = len(buf)
@@ -161,9 +160,6 @@ def english_score(str):
             else:
                 score += other_char_score(c)
 
-    if score < 0:
-        score = 0
-
     return score
 
 
@@ -171,7 +167,6 @@ def brute_force_xor(bytes):
     _l = len(bytes)
     scores = {}
 
-    print "looking at", repr(bytes)
     for c in string.printable:
         result = fixed_xor(bytes, hex2bin(binascii.b2a_hex(c) * _l))
         scores[c] = english_score(result)
@@ -207,7 +202,6 @@ def challenge_4():
 def brute_force_xor_chunks(lines):
     scores = []
     for line in lines:
-        print line
         scores.append(brute_force_xor(line))
 
     maxScore = 0
@@ -268,6 +262,24 @@ if TEST_ASSERTIONS:
         == [bytearray("abg"), bytearray("sue"), bytearray("srr"), bytearray("pgs")]
 
 
+def bruteforce_keysize(bytes, desired_keysizes):
+    keysizes = Set()
+    while len(keysizes) != desired_keysizes:
+        for keysize in range(1, int(len(bytes) / 2)):
+            # 3.
+            str1 = bytes[:keysize]
+            str2 = bytes[keysize:keysize * 2]
+            dist = edit_dist(str1, str2)
+            norm = dist / (keysize * 8)
+            keysizes.add((keysize, norm))
+        keysizes = sorted(keysizes, key=lambda item: item[1])
+        if len(keysizes) > desired_keysizes:
+            keysizes = keysizes[:desired_keysizes]
+        print keysizes
+
+    return [k[0] for k in keysizes]
+
+
 def challenge_6():
     b64 = ''
     with open('6.txt', 'r') as f:
@@ -277,44 +289,41 @@ def challenge_6():
 
     bytes = base64.b64decode(b64)
 
-    smallestDist = None
-    favKeysize = None
-
     # XXX try few smallest potential keysizes
-    for samples in range(1, 8):
-        for keysize in range(2, 41):
-            str1 = bytes[:keysize * samples]
-            str2 = bytes[keysize * samples:keysize * 2 * samples]
-            dist = edit_dist(str1, str2)
-            norm = dist / (keysize * samples * 8)
-            if not smallestDist or norm < smallestDist:
-                smallestDist = norm
-                favKeysize = keysize
+    keysizes = []
+    desired_keysizes = 5
+    # 1.
+    keysizes = bruteforce_keysize(bytes, desired_keysizes)
 
-    chunks = []
-    for chunk in chunkify(bytes, favKeysize):
-        chunks.append(chunk)
+    for favKeysize in keysizes:
+        print "Working with keysize", favKeysize
+        chunks = []
+        # 5.
+        # chunk encrypted data into keysize-sized chunks
+        for chunk in chunkify(bytes, favKeysize):
+            chunks.append(chunk)
 
-    # now we transpose the chunks --
-    # for each block, take the first byte, append to transposition array,
-    # then second byte from each block...
-    key = []
-    transposition = transpose(chunks, favKeysize + 1)
+        key = []
+        # 6.
+        # transpose the keysize-sized chunks to produce a keysize-long array
+        # containing the 1..keysize'th elements of each block
+        transposition = transpose(chunks, favKeysize + 1)
 
-    print len(transposition)
-    print transposition
-    # now we have each position of the candidate key to iterate through --
-    for block in transposition:
-        for c in string.printable:
-            result = repeating_xor(block, hex2bin(binascii.b2a_hex(c) * favKeysize))
-            print english_score(result)
+        # now we have each position of the candidate key to iterate through --
+        for block in transposition:
+            for c in string.printable:
+                result = repeating_xor(block, hex2bin(binascii.b2a_hex(c) * favKeysize))
+                print result
+                score = english_score(result)
+                if score > 0:
+                    print score
 
-        key.append(brute_force_xor(block))
+            key.append(brute_force_xor(block))
 
-    print key
+        print key
 
-    for c in key:
-        print c['char']
+        for c in key:
+            print c['char']
 
     return bytearray(''.join([c['char'] for c in key]))
 
@@ -332,7 +341,7 @@ with open('6.txt', 'r') as f:
 
 bytes = bytearray(base64.b64decode(b64))
 
-print repr(key)
-print repr(bytes)
-print repeating_xor(bytes, key)
+print "KEY:", repr(key)
+print "ENCRYPTED DATA:", repr(bytes)
+print "DECRYPTED DATA:", repr(repeating_xor(bytes, key))
 
